@@ -4,15 +4,13 @@ import cl.duoc.gestion_guias.model.Guide;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-
-import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -23,18 +21,14 @@ public class S3Service {
     @Value("${aws.s3.bucket}")
     private String bucket;
 
-    public String upload(MultipartFile file, Guide guide) {
+    public String upload(byte[] content, Guide guide) {
         String key = buildKey(guide);
-        try {
-            PutObjectRequest request = PutObjectRequest.builder()
-                    .bucket(bucket)
-                    .key(key)
-                    .contentType(file.getContentType())
-                    .build();
-            s3Client.putObject(request, RequestBody.fromBytes(file.getBytes()));
-        } catch (IOException e) {
-            throw new RuntimeException("Error uploading file to S3", e);
-        }
+        PutObjectRequest request = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .contentType("application/pdf")
+                .build();
+        s3Client.putObject(request, RequestBody.fromBytes(content));
         return key;
     }
 
@@ -45,6 +39,14 @@ public class S3Service {
                 .build();
         ResponseBytes<GetObjectResponse> response = s3Client.getObjectAsBytes(request);
         return response.asByteArray();
+    }
+
+    public void delete(String key) {
+        DeleteObjectRequest request = DeleteObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .build();
+        s3Client.deleteObject(request);
     }
 
     private String buildKey(Guide guide) {

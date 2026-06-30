@@ -10,7 +10,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -44,8 +43,8 @@ public class GuideController {
     }
 
     @PostMapping("/{id}/upload")
-    public ResponseEntity<GuideResponseDTO> uploadToS3(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
-        return ResponseEntity.ok(guideService.uploadToS3(id, file));
+    public ResponseEntity<GuideResponseDTO> uploadToS3(@PathVariable Long id) {
+        return ResponseEntity.ok(guideService.uploadToS3(id));
     }
 
     @GetMapping("/{id}/download")

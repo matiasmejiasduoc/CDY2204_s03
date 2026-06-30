@@ -8,7 +8,6 @@ import cl.duoc.gestion_guias.model.GuideStatus;
 import cl.duoc.gestion_guias.repository.GuideRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -19,7 +18,7 @@ public class GuideService {
 
     private final GuideRepository guideRepository;
     private final S3Service s3Service;
-    private final EfsService efsService;
+    private final PdfService pdfService;
 
     public GuideResponseDTO create(GuideRequestDTO dto) {
         Guide guide = new Guide();
@@ -50,17 +49,20 @@ public class GuideService {
 
     public void delete(Long id) {
         Guide guide = getOrThrow(id);
+        if (guide.getS3Key() != null) {
+            s3Service.delete(guide.getS3Key());
+            guide.setS3Key(null);
+        }
         guide.setStatus(GuideStatus.DELETED);
         guideRepository.save(guide);
     }
 
-    public GuideResponseDTO uploadToS3(Long id, MultipartFile file) {
+    public GuideResponseDTO uploadToS3(Long id) {
         Guide guide = getOrThrow(id);
 
-        String efsPath = efsService.saveTemporarily(file, guide);
-        guide.setEfsPath(efsPath);
+        byte[] pdf = pdfService.generate(guide);
 
-        String s3Key = s3Service.upload(file, guide);
+        String s3Key = s3Service.upload(pdf, guide);
         guide.setS3Key(s3Key);
         guide.setStatus(GuideStatus.UPLOADED);
 
