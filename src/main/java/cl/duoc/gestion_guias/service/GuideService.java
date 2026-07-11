@@ -19,6 +19,7 @@ public class GuideService {
     private final GuideRepository guideRepository;
     private final S3Service s3Service;
     private final PdfService pdfService;
+    private final GuideProducer guideProducer;
 
     public GuideResponseDTO create(GuideRequestDTO dto) {
         Guide guide = new Guide();
@@ -29,7 +30,11 @@ public class GuideService {
         guide.setDestinationAddress(dto.getDestinationAddress());
         guide.setCargoDescription(dto.getCargoDescription());
         guide.setStatus(GuideStatus.PENDING);
-        return toDTO(guideRepository.save(guide));
+
+        Guide savedGuide = guideRepository.save(guide);
+        GuideResponseDTO response = toDTO(savedGuide);
+        guideProducer.sendGuide(response);
+        return response;
     }
 
     public GuideResponseDTO findById(Long id) {
