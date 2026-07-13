@@ -6,7 +6,6 @@ import cl.duoc.gestion_guias.repository.ProcessedGuideRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,12 +20,6 @@ public class GuideConsumer {
 
     private final ProcessedGuideRepository processedGuideRepository;
     private final RabbitTemplate rabbitTemplate;
-
-    @RabbitListener(queues = "cola-guias")
-    @Transactional
-    public void listen(GuideResponseDTO guide) {
-        processGuide(guide);
-    }
 
     @Transactional
     public void processPendingMessages() {
@@ -55,7 +48,7 @@ public class GuideConsumer {
             processedGuideRepository.save(processedGuide);
         } catch (Exception ex) {
             log.error("Error al procesar la guía desde RabbitMQ", ex);
-            rabbitTemplate.convertAndSend("guias-exchange", "cola-guias-error", guide);
+            rabbitTemplate.convertAndSend("guias-exchange", "guia.error", guide);
         }
     }
 }

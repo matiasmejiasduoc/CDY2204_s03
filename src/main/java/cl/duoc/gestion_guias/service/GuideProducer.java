@@ -17,7 +17,7 @@ public class GuideProducer {
 
     public void sendGuide(GuideResponseDTO guide) {
         try {
-            rabbitTemplate.convertAndSend("guias-exchange", "cola-guias", guide);
+            rabbitTemplate.convertAndSend("guias-exchange", "guia", guide);
         } catch (Exception ex) {
             log.error("Error al publicar la guía en RabbitMQ", ex);
         }

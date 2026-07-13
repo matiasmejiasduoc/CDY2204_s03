@@ -74,6 +74,7 @@ public class GuideController {
     }
 
     @PostMapping("/process")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> processPendingMessages() {
         guideConsumer.processPendingMessages();
         return ResponseEntity.ok().build();
