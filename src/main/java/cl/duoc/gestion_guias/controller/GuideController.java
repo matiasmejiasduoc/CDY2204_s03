@@ -2,7 +2,6 @@ package cl.duoc.gestion_guias.controller;
 
 import cl.duoc.gestion_guias.dto.GuideRequestDTO;
 import cl.duoc.gestion_guias.dto.GuideResponseDTO;
-import cl.duoc.gestion_guias.service.GuideConsumer;
 import cl.duoc.gestion_guias.service.GuideService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import jakarta.validation.Valid;
@@ -22,7 +21,6 @@ import java.util.List;
 public class GuideController {
 
     private final GuideService guideService;
-    private final GuideConsumer guideConsumer;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -71,12 +69,5 @@ public class GuideController {
             @RequestParam String carrier,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return ResponseEntity.ok(guideService.findByCarrierAndDate(carrier, date));
-    }
-
-    @PostMapping("/process")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> processPendingMessages() {
-        guideConsumer.processPendingMessages();
-        return ResponseEntity.ok().build();
     }
 }
